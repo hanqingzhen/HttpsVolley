@@ -49,97 +49,97 @@ b.从[清华镜像](https://mirrors.tuna.tsinghua.edu.cn/help/AOSP/)  clone
 
 
     public class SSLSocketHelper {
-        private static TrustManager[] getWrappedTrustManagers(TrustManager[] trustManagers) {
-            final X509TrustManager originalTrustManager = (X509TrustManager) trustManagers[0];
-            return new TrustManager[]{
-                new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return originalTrustManager.getAcceptedIssuers();
-                    }
+    	private static TrustManager[] getWrappedTrustManagers(TrustManager[] trustManagers) {
+    		final X509TrustManager originalTrustManager = (X509TrustManager) trustManagers[0];
+    			return new TrustManager[]{
+    				new X509TrustManager() {
+    					public X509Certificate[] getAcceptedIssuers() {
+    						return originalTrustManager.getAcceptedIssuers();
+    						}
 
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                        try {
-                            if (certs != null && certs.length > 0){
-                                certs[0].checkValidity();
-                            } else {
-                                originalTrustManager.checkClientTrusted(certs, authType);
-                            }
-                        } catch (CertificateException e) {
-                            Log.w("checkClientTrusted", e.toString());
-                        }
-                    }
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        try {
+                            if (certs != null && certs.length > 0){
+                                certs[0].checkValidity();
+                            } else {
+                                originalTrustManager.checkClientTrusted(certs, authType);
+                            }
+                        } catch (CertificateException e) {
+                            Log.w("checkClientTrusted", e.toString());
+                        }
+                    }
 
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                        try {
-                            if (certs != null && certs.length > 0){
-                                certs[0].checkValidity();
-                            } else {
-                                originalTrustManager.checkServerTrusted(certs, authType);
-                            }
-                        } catch (CertificateException e) {
-                            Log.w("checkServerTrusted", e.toString());
-                        }
-                    }
-                }
-        };
-    }
-
-    public static SSLSocketFactory getSSLSocketFactoryByCertificate(Context context,String keyStoreType, int keystoreResId)
-            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, KeyManagementException {
-
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        InputStream caInput = context.getResources().openRawResource(keystoreResId);
-
-        Certificate ca = cf.generateCertificate(caInput);
-        caInput.close();
-
-        if (keyStoreType == null || keyStoreType.length() == 0) {
-            keyStoreType = KeyStore.getDefaultType();
-        }
-        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        keyStore.load(null, null);
-        keyStore.setCertificateEntry("ca", ca);
-
-        String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
-        tmf.init(keyStore);
-
-        TrustManager[] wrappedTrustManagers = getWrappedTrustManagers(tmf.getTrustManagers());
-
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, wrappedTrustManagers, null);
-
-        return sslContext.getSocketFactory();
-    }
-
-    public static SSLSocketFactory getSSLSocketFactoryByKeyStore(Context context,String keyStoreType, int keystoreResId, String keyPassword)
-            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, KeyManagementException {
-
-        InputStream caInput = context.getResources().openRawResource(keystoreResId);
-
-        // creating a KeyStore containing trusted CAs
-
-        if (keyStoreType == null || keyStoreType.length() == 0) {
-            keyStoreType = KeyStore.getDefaultType();
-        }
-        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-
-        keyStore.load(caInput, keyPassword.toCharArray());
-
-        // creating a TrustManager that trusts the CAs in the KeyStore
-
-        String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
-        tmf.init(keyStore);
-
-        TrustManager[] wrappedTrustManagers = getWrappedTrustManagers(tmf.getTrustManagers());
-
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, wrappedTrustManagers, null);
-
-        return sslContext.getSocketFactory();
-        }
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        try {
+                            if (certs != null && certs.length > 0){
+                                certs[0].checkValidity();
+                            } else {
+                                originalTrustManager.checkServerTrusted(certs, authType);
+                            }
+                        } catch (CertificateException e) {
+                            Log.w("checkServerTrusted", e.toString());
+                        }
+                    }
+                }
+        };
     }
+
+    public static SSLSocketFactory getSSLSocketFactoryByCertificate(Context context,String keyStoreType, int keystoreResId)
+            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, KeyManagementException {
+
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        InputStream caInput = context.getResources().openRawResource(keystoreResId);
+
+        Certificate ca = cf.generateCertificate(caInput);
+        caInput.close();
+
+        if (keyStoreType == null || keyStoreType.length() == 0) {
+            keyStoreType = KeyStore.getDefaultType();
+        }
+        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+        keyStore.load(null, null);
+        keyStore.setCertificateEntry("ca", ca);
+
+        String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+        tmf.init(keyStore);
+
+        TrustManager[] wrappedTrustManagers = getWrappedTrustManagers(tmf.getTrustManagers());
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, wrappedTrustManagers, null);
+
+        return sslContext.getSocketFactory();
+    }
+
+    public static SSLSocketFactory getSSLSocketFactoryByKeyStore(Context context,String keyStoreType, int keystoreResId, String keyPassword)
+            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, KeyManagementException {
+
+        InputStream caInput = context.getResources().openRawResource(keystoreResId);
+
+        // creating a KeyStore containing trusted CAs
+
+        if (keyStoreType == null || keyStoreType.length() == 0) {
+            keyStoreType = KeyStore.getDefaultType();
+        }
+        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+
+        keyStore.load(caInput, keyPassword.toCharArray());
+
+        // creating a TrustManager that trusts the CAs in the KeyStore
+
+        String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+        tmf.init(keyStore);
+
+        TrustManager[] wrappedTrustManagers = getWrappedTrustManagers(tmf.getTrustManagers());
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, wrappedTrustManagers, null);
+
+        return sslContext.getSocketFactory();
+    }
+}
 
 4）详细可参看[GitHub工程](https://github.com/hanqingzhen/HttpsVolley)
 [GitHub工程](https://github.com/hanqingzhen/HttpsVolley)与原始的volley对比：
@@ -176,13 +176,22 @@ c.只有com.android.volley.ssl包和Volley.java与支持https自签名证书有�
     });
 ##10.参考链接
 [国内镜像加速Android源码下载](http://sunjiajia.com/2015/08/14/download-android-open-source-projects/)
+
 [通过 HTTPS 和 SSL 确保安全](https://developer.android.com/training/articles/security-ssl.html)
+
 [Certificate authority](https://en.wikipedia.org/wiki/Certificate_authority)
-[ 清华大学开源软件镜像站](https://mirrors.tuna.tsinghua.edu.cn/)
+
+[清华大学开源软件镜像站](https://mirrors.tuna.tsinghua.edu.cn/)
+
 [Does the Web View on Android support SSL?](http://stackoverflow.com/questions/5977977/does-the-web-view-on-android-support-ssl)
+
 [Android _实现SSL解决不受信任的证书问题](http://blog.csdn.net/zimo2013/article/details/45190585)
+
 [Using Android Volley With Self-Signed SSL Certificate](http://ogrelab.ikratko.com/using-android-volley-with-self-signed-certificate/)
+
 [Android volley self signed HTTPS trust anchor for certification path not found](http://stackoverflow.com/questions/32154115/android-volley-self-signed-https-trust-anchor-for-certification-path-not-found)
+
 [Android 网络--我是怎么做的: Volley+OkHttp+Https](http://www.jianshu.com/p/e58161cbc3a4)
+
 [Making a HTTPS request using Android Volley](http://stackoverflow.com/questions/17045795/making-a-https-request-using-android-volley)
 
